@@ -1,17 +1,14 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Model;
-using Logika;
-using Timer = System.Timers.Timer;
 
 namespace ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
         
-        private readonly ObservableCollection<Punkt> wspolrzedne;
-        private readonly Timer timer;
-        private readonly ILogikaAPIBase logika;
+        private readonly ObservableCollection<BallModel> wspolrzedne;
+        private readonly ModelAbstractAPI model;
 
         private int numerKulki;
         private int promien;
@@ -24,14 +21,13 @@ namespace ViewModel
 
         public MainViewModel() : this(StolBase.CreateApi()) { }
 
-        private MainViewModel(StolBase model)
+        private MainViewModel(StolBase stolModel)
         {
-            logika = new LogikaAPI();
-            wspolrzedne = new ObservableCollection<Punkt>();
-            promien = model.Radius;
-            szerokosc = model.CanvasWidth;
-            wysokosc = model.CanvasHeight;
-            timer = new Timer();
+            wspolrzedne = new ObservableCollection<BallModel>();
+            promien = stolModel.Radius;
+            szerokosc = stolModel.CanvasWidth;
+            wysokosc = stolModel.CanvasHeight;
+            model = ModelAbstractAPI.CreateAPI();
 
             DodawanieKulek = new RelayCommand(DodajKulki);
             CzyszczenieStolu = new RelayCommand(CzyscStol);
@@ -39,12 +35,12 @@ namespace ViewModel
 
         private void DodajKulki()
         {
-            logika.DodajKulki(Wspolrzedne, numerKulki, promien, szerokosc - promien, promien, wysokosc - promien, timer, promien, Coor);
+            model.DodajKulki(NumerKulki, promien, szerokosc-promien, promien, wysokosc-promien, promien);
         }
 
         private void CzyscStol()
         {
-            logika.Czyszczenie(timer, Wspolrzedne);
+            model.CzyscStol();
         }
 
         public int NumerKulki
@@ -69,25 +65,11 @@ namespace ViewModel
             }
         }
 
-        public ObservableCollection<Punkt> Wspolrzedne
+        public ObservableCollection<BallModel> Wspolrzedne
         {
-            get => wspolrzedne;
-            set
-            {
-                if (Equals(value, wspolrzedne)) return;
-                RaisePropertyChanged();
-            }
+            get => model.Balls;
         }
 
-        public ObservableCollection<Punkt> Coor
-        {
-            get => wspolrzedne;
-            set
-            {
-                if (Equals(value, wspolrzedne)) return;
-                RaisePropertyChanged();
-            }
-        }
 
         public int Szerokosc
         {

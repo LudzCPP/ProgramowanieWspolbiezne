@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
+using System.Drawing;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using Logika;
 
 namespace Model
 {
-    public class BallModel : INotifyPropertyChanged
+    public abstract class ModelAbstractAPI
     {
+        
         
     }
 }

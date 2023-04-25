@@ -19,7 +19,7 @@
                 <Button Name="ApplyButton" Content="Dodaj kulki" Width="70" Margin="5" Command="{Binding DodawanieKulek}"/>
                 <Button Content="Zbierz kulki" Width="100" Margin="5" Command="{Binding CzyszczenieStolu}"/>
             </StackPanel>
-            <ItemsControl ItemsSource="{Binding Wspolrzedne, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+            <ItemsControl ItemsSource="{Binding Wspolrzedne}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas Width="{Binding Szerokosc}" Height="{Binding Wysokosc}" Background="LawnGreen"/>

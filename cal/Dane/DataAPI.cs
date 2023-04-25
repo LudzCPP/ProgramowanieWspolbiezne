@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Dane
 {
-    public class DataAPI : DataAPIBase
+    internal class DataAPI : DataAPIBase
     {
 
 

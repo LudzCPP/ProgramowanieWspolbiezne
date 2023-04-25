@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Dane
 {
-    public class DataAPIBase
+    public abstract class DataAPIBase
     {
     }
 }

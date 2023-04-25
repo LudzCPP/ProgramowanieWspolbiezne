@@ -3,22 +3,40 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:viewModel="clr-namespace:ViewModel;assembly=ViewModel"
+        xmlns:ViewModel="clr-namespace:ViewModel;assembly=ViewModel"
         mc:Ignorable="d"
-        Title="Bouncing Balls" Height="450" Width="800">
+        Title="Billard" Height="300" Width="350" ResizeMode="CanMinimize" Background="White">
     <Window.DataContext>
-        <viewModel:MainViewModel/>
+        <ViewModel:MainViewModel/>
     </Window.DataContext>
     <Grid>
-        <Canvas>
-            <ItemsControl ItemsSource="{Binding Kulki}">
+        <StackPanel Orientation="Vertical" VerticalAlignment="Top">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Label Content="Proszę podać liczbę kulek: "/>
+                <TextBox Name="BallsNumberInput" Width="40" Text="{Binding NumerKulki}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Name="ApplyButton" Content="Dodaj kulki" Width="70" Margin="5" Command="{Binding DodawanieKulek}"/>
+                <Button Content="Zbierz kulki" Width="100" Margin="5" Command="{Binding CzyszczenieStolu}"/>
+            </StackPanel>
+            <ItemsControl ItemsSource="{Binding Wspolrzedne, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas Width="{Binding Szerokosc}" Height="{Binding Wysokosc}" Background="LawnGreen"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemContainerStyle>
+                    <Style>
+                        <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                        <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Ellipse Width="20" Height="20" Fill="Red" Canvas.Left="{Binding Kulka.PozycjaX}" Canvas.Top="{Binding Kulka.PozycjaY}"/>
+                        <Ellipse Width="{Binding DataContext.Promien, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}}" Height="{Binding DataContext.Promien, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}}" Fill="Gray" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-        </Canvas>
-        <Button Content="Dodaj kulke" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,10,0" Click="DodajKulke_Click"/>
+        </StackPanel>
     </Grid>
 </Window>

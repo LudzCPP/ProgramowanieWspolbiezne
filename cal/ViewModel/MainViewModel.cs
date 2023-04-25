@@ -1,75 +1,112 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Logika;
 using Model;
+using Logika;
+using Timer = System.Timers.Timer;
 
 namespace ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
-        private readonly LogikaAPIBase _logikaAPI;
-        private List<IBallModel> _kulki;
-        private ICommand _dodajKulkeCommand;
-        private ICommand _aktualizujPolozenieKulkiCommand;
+        
+        private readonly ObservableCollection<Punkt> wspolrzedne;
+        private readonly Timer timer;
+        private readonly ILogikaAPIBase logika;
 
-        public MainViewModel(LogikaAPIBase logikaAPI)
+        private int numerKulki;
+        private int promien;
+        private readonly int szerokosc;
+        private readonly int wysokosc;
+        
+
+        public ICommand DodawanieKulek { get; }
+        public ICommand CzyszczenieStolu { get; }
+
+        public MainViewModel() : this(StolBase.CreateApi()) { }
+
+        private MainViewModel(StolBase model)
         {
-            _logikaAPI = logikaAPI;
-            _kulki = new List<IBallModel>();
-            LoadBalls();
+            logika = new LogikaAPI();
+            wspolrzedne = new ObservableCollection<Punkt>();
+            promien = model.Radius;
+            szerokosc = model.CanvasWidth;
+            wysokosc = model.CanvasHeight;
+            timer = new Timer();
+
+            DodawanieKulek = new RelayCommand(DodajKulki);
+            CzyszczenieStolu = new RelayCommand(CzyscStol);
         }
 
-        public List<IBallModel> Kulki
+        private void DodajKulki()
         {
-            get { return _kulki; }
+            logika.DodajKulki(Wspolrzedne, numerKulki, promien, szerokosc - promien, promien, wysokosc - promien, timer, promien, Coor);
+        }
+
+        private void CzyscStol()
+        {
+            logika.Czyszczenie(timer, Wspolrzedne);
+        }
+
+        public int NumerKulki
+        {
+            get => numerKulki;
             set
             {
-                _kulki = value;
-                OnPropertyChanged();
+                if (value == numerKulki) return;
+                numerKulki = value;
+                RaisePropertyChanged();
             }
         }
 
-        public ICommand DodajKulkeCommand
+        public int Promien
         {
-            get
+            get => promien;
+            set
             {
-                return _dodajKulkeCommand ??= new RelayCommand(async () => await DodajKulkeAsync());
+                if (value == promien) return;
+                promien = value;
+                RaisePropertyChanged();
             }
         }
 
-        public ICommand AktualizujPolozenieKulkiCommand
+        public ObservableCollection<Punkt> Wspolrzedne
         {
-            get
+            get => wspolrzedne;
+            set
             {
-                return _aktualizujPolozenieKulkiCommand ??= new RelayCommand<double[]>(async param => await AktualizujPolozenieKulkiAsync(param[0], param[1]));
+                if (Equals(value, wspolrzedne)) return;
+                RaisePropertyChanged();
             }
         }
 
-        private async Task LoadBalls()
+        public ObservableCollection<Punkt> Coor
         {
-            var kulkiDane = await _logikaAPI.PobierzKulkiAsync();
-            foreach (var kulka in kulkiDane)
+            get => wspolrzedne;
+            set
             {
-                _kulki.Add(new BallModel(kulka, _logikaAPI));
+                if (Equals(value, wspolrzedne)) return;
+                RaisePropertyChanged();
             }
-            OnPropertyChanged(nameof(Kulki));
         }
 
-        private async Task DodajKulkeAsync()
+        public int Szerokosc
         {
-            var kulka = await _logikaAPI.DodajKulkeAsync();
-            _kulki.Add(new BallModel(kulka, _logikaAPI));
-            OnPropertyChanged(nameof(Kulki));
-        }
-
-        private async Task AktualizujPolozenieKulkiAsync(double ograniczenieX, double ograniczenieY)
-        {
-            foreach (var kulka in _kulki)
+            get => szerokosc;
+            set
             {
-                await kulka.MoveAsync(ograniczenieX, ograniczenieY);
+                if (value.Equals(szerokosc)) return;
+                RaisePropertyChanged();
             }
-            OnPropertyChanged(nameof(Kulki));
+        }
+
+        public int Wysokosc
+        {
+            get => wysokosc;
+            set
+            {
+                if (value.Equals(wysokosc)) return;
+                RaisePropertyChanged();
+            }
         }
     }
 }

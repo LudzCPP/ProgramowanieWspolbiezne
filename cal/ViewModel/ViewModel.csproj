@@ -8,9 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" Version="2.20.0" />
-  </ItemGroup>
-
-  <ItemGroup>
+  </ItemGroup>  <ItemGroup>
+    <ProjectReference Include="..\Logika\Logika.csproj" />
     <ProjectReference Include="..\Model\Model.csproj" />
   </ItemGroup>
 

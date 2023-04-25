@@ -1,48 +1,59 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Dane;
+﻿using System.Collections;
+using System.Collections.ObjectModel;
+using Timer = System.Timers.Timer;
 
 namespace Logika
 {
-    public class LogikaAPI : LogikaAPIBase
+    internal class LogikaAPI : ILogikaAPIBase
     {
-        private readonly DataAPIBase _dataAPI;
 
-        public LogikaAPI(DataAPIBase dataAPI)
+        internal override void DodajKulki(ICollection<Punkt> coordinates, int ballsNumber, int minX, int maxX, int minY, int maxY, Timer timer, int radius, ObservableCollection<Punkt> coor)
         {
-            _dataAPI = dataAPI;
-        }
-
-        public override Task<List<Kulka>> PobierzKulkiAsync()
-        {
-            return _dataAPI.PobierzKulkiAsync();
-        }
-
-        public override Task<Kulka> DodajKulkeAsync()
-        {
-            return _dataAPI.DodajKulkeAsync();
-        }
-
-        public override async Task AktualizujPolozenieKulkiAsync(Kulka kulka, double ograniczenieX, double ograniczenieY)
-        {
-            double nowaPozycjaX = kulka.PozycjaX + kulka.PredkoscX;
-            double nowaPozycjaY = kulka.PozycjaY + kulka.PredkoscY;
-
-            if (nowaPozycjaX < 0 || nowaPozycjaX > ograniczenieX)
+            var randomGenerator = new Losowosc();
+            if (coordinates.Count != 0) return;
+            for (var i = 0; i < ballsNumber; i++)
             {
-                kulka.PredkoscX = -kulka.PredkoscX;
+                var point = new Punkt(randomGenerator.GenerateDouble(minX, maxX),
+                    randomGenerator.GenerateDouble(minY, maxY));
+                coordinates.Add(point);
             }
+            if (ballsNumber == 0) return;
 
-            if (nowaPozycjaY < 0 || nowaPozycjaY > ograniczenieY)
+            var context = SynchronizationContext.Current;
+            timer.Interval = 30;
+            timer.Elapsed += (_, _) => context.Send(_ => Poruszanie(coor, radius, maxX, maxY), null);
+            timer.AutoReset = true;
+            timer.Enabled = true;
+
+        }
+
+        internal override void Poruszanie(ObservableCollection<Punkt> coordinates, int radius, int maxX, int maxY)
+        {
+            var randomGenerator = new Losowosc();
+            var copy = coordinates;
+            for (var i = 0; i < coordinates.Count; i++)
             {
-                kulka.PredkoscY = -kulka.PredkoscY;
+                var xShift = randomGenerator.GenerateDouble(-1, 1);
+                var yShift = randomGenerator.GenerateDouble(-1, 1);
+                var newPt = new Punkt(copy[i].X + xShift, copy[i].Y + yShift);
+                if (newPt.X - radius < 0) newPt = new Punkt(radius, newPt.Y);
+                if (newPt.X + radius > maxX) newPt = new Punkt(maxX - radius, newPt.Y);
+                if (newPt.Y - radius < 0) newPt = new Punkt(newPt.X, radius);
+                if (newPt.Y + radius > maxY) newPt = new Punkt(newPt.X, maxY - radius);
+                copy[i] = newPt;
             }
+            coordinates = new ObservableCollection<Punkt>(copy);
+        }
 
-            kulka.PozycjaX += kulka.PredkoscX;
-            kulka.PozycjaY += kulka.PredkoscY;
+        internal override void Stop(Timer timer)
+        {
+            timer.Enabled = false;
+        }
 
-            await Task.CompletedTask;
+        internal override void Czyszczenie(Timer timer, IList coordinates)
+        {
+            Stop(timer);
+            coordinates.Clear();
         }
     }
 }

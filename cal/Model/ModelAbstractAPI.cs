@@ -11,7 +11,13 @@ namespace Model
 {
     public abstract class ModelAbstractAPI
     {
-        
-        
+        public ObservableCollection<BallModel> Balls = new ObservableCollection<BallModel>();
+        public abstract void DodajKulki(int ballsNumber, int minX, int maxX, int minY, int maxY, int radius);
+        public abstract void CzyscStol();
+
+        public static ModelAbstractAPI CreateAPI()
+        {
+            return new ModelAPI();
+        }
     }
 }

@@ -1,27 +1,29 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Dane;
+using DocumentFormat.OpenXml.EMMA;
 using Model;
 
 namespace ViewModel
 {
-    public class MainViewModel : ViewModelBase
+    internal class MainViewModel : ViewModelBase
     {
-        
-        private readonly ObservableCollection<BallModel> wspolrzedne;
+
+        /*private readonly ObservableCollection<BallModel> wspolrzedne;
         private readonly ModelAbstractAPI model;
 
         private int numerKulki;
         private int promien;
         private readonly int szerokosc;
-        private readonly int wysokosc;
-        
+        private readonly int wysokosc;*/
+
 
         public ICommand DodawanieKulek { get; }
-        public ICommand CzyszczenieStolu { get; }
+        private ModelAbstractAPI model;
 
-        public MainViewModel() : this(StolBase.CreateApi()) { }
+        //public MainViewModel() : this(StolBase.CreateApi()) { }
 
-        private MainViewModel(StolBase stolModel)
+        /*private MainViewModel(StolBase stolModel)
         {
             wspolrzedne = new ObservableCollection<BallModel>();
             promien = stolModel.Radius;
@@ -31,9 +33,17 @@ namespace ViewModel
 
             DodawanieKulek = new RelayCommand(DodajKulki);
             CzyszczenieStolu = new RelayCommand(CzyscStol);
+        }*/
+
+        public override void StworzPilke()
+        {
+            model.StworzPilke();
+            var punkt = model.PobierzPilki().Last();
+            punkt.PositionChanged += PositionChangedHandler;
+            Obiekty = PobierzObiekty();
         }
 
-        private void DodajKulki()
+        /*private void DodajKulki()
         {
             model.DodajKulki(NumerKulki, promien, szerokosc-promien, promien, wysokosc-promien, promien);
         }
@@ -89,6 +99,14 @@ namespace ViewModel
                 if (value.Equals(wysokosc)) return;
                 RaisePropertyChanged();
             }
+        }*/
+        public override ObservableCollection<object> PobierzObiekty()
+        {
+            return model.PobierzObiekty();
+        }
+        private void PositionChangedHandler(object sender, Zdarzenia e)
+        {
+            Obiekty = PobierzObiekty();
         }
     }
 }

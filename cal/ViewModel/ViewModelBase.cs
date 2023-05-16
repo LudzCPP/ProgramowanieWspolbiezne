@@ -1,23 +1,40 @@
-﻿using System.Collections.Specialized;
+﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace ViewModel
 {
-    public abstract class ViewModelBase : INotifyPropertyChanged, INotifyCollectionChanged
+    public abstract class ViewModelBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
 
+        private ObservableCollection<object> obiekty;
 
-        protected virtual void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        public abstract ObservableCollection<object> PobierzObiekty();
+
+        public static ViewModelBase CreateViewModelAPI()
+        {
+            return new MainViewModel();
+        }
+
+        public ObservableCollection<object> Obiekty
+        {
+            get => obiekty;
+            set
+            {
+                obiekty = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public abstract void StworzPilke();
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        protected virtual void RaiseCollectionChanged(NotifyCollectionChangedAction action)
-        {
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(action));
-        }
+
     }
 }

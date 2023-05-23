@@ -21,6 +21,13 @@ namespace ViewModel
         public ICommand DodawanieKulek { get; }
         private ModelAbstractAPI model;
 
+        public MainViewModel()
+        {
+            model = ModelAbstractAPI.CreateAPI(null);
+            DodawanieKulek = new RelayCommand(StworzPilke);
+            Obiekty = PobierzObiekty();
+        }
+
         //public MainViewModel() : this(StolBase.CreateApi()) { }
 
         /*private MainViewModel(StolBase stolModel)

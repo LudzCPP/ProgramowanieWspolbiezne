@@ -5,38 +5,43 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ViewModel="clr-namespace:ViewModel;assembly=ViewModel"
         mc:Ignorable="d"
-        Title="Billard" Height="300" Width="350" ResizeMode="CanMinimize" Background="White">
-    <Window.DataContext>
-        <ViewModel:MainViewModel/>
-    </Window.DataContext>
-    <Grid>
-        <StackPanel Orientation="Vertical" VerticalAlignment="Top">
+        Title="Billard" Height="300" Width="350" ResizeMode="CanMinimize" Background="#0B132B">
+
+    <DockPanel>
+        <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Margin="10">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Label Content="Proszę podać liczbę kulek: "/>
-                <TextBox Name="BallsNumberInput" Width="40" Text="{Binding NumerKulki}"/>
+                <Label Content="Proszę podać liczbę kulek: " Foreground="White"/>
+                <TextBox Name="BallsNumberInput" Width="40"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Name="ApplyButton" Content="Dodaj kulki" Width="70" Margin="5" Command="{Binding DodawanieKulek}"/>
-                <Button Content="Zbierz kulki" Width="100" Margin="5" Command="{Binding CzyszczenieStolu}"/>
+                <Button Name="ApplyButton" Content="Dodaj kulki" Width="70" Margin="5" Command="{Binding DodawanieKulek}" Background="#3C6997" Foreground="White"/>
+                <Button Content="Zbierz kulki" Width="100" Margin="5" Background="#3C6997" Foreground="White"/>
             </StackPanel>
-            <ItemsControl ItemsSource="{Binding Wspolrzedne}">
+        </StackPanel>
+        <Canvas RenderOptions.EdgeMode="Aliased" Background="#1F4287">
+            <ItemsControl ItemsSource="{Binding Obiekty}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <Canvas Width="{Binding Szerokosc}" Height="{Binding Wysokosc}" Background="LawnGreen"/>
+                        <Canvas IsItemsHost="True"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemContainerStyle>
-                    <Style>
-                        <Setter Property="Canvas.Left" Value="{Binding X}"/>
-                        <Setter Property="Canvas.Top" Value="{Binding Y}"/>
-                    </Style>
-                </ItemsControl.ItemContainerStyle>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Ellipse Width="{Binding DataContext.Promien, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}}" Height="{Binding DataContext.Promien, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}}" Fill="Gray" />
+                        <Ellipse Width="{Binding Diameter}" Height="{Binding Diameter}"
+                                 Fill="#A6E3E9" Stroke="Black" StrokeThickness="0.5">
+                            <Ellipse.RenderTransform>
+                                <TranslateTransform X="{Binding X}" Y="{Binding Y}" />
+                            </Ellipse.RenderTransform>
+                        </Ellipse>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
+                <ItemsControl.ItemContainerStyle>
+                    <Style TargetType="ContentPresenter">
+                        <Setter Property="Canvas.Left" Value="{Binding X}" />
+                        <Setter Property="Canvas.Top" Value="{Binding Y}" />
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
             </ItemsControl>
-        </StackPanel>
-    </Grid>
+        </Canvas>
+    </DockPanel>
 </Window>

@@ -1,4 +1,7 @@
-﻿namespace View
+﻿using ViewModel;
+
+namespace View
+
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -8,6 +11,10 @@
         public MainWindow()
         {
             InitializeComponent();
+
+        ViewModelBase viewModel = ViewModelBase.CreateViewModelAPI();
+        DataContext = viewModel;
+
         }
     }
 }

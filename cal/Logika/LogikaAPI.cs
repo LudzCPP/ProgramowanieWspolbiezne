@@ -11,24 +11,14 @@ namespace Logika
     internal class LogikaAPI : ILogikaAPIBase
     {
         private DataAPI _dataAPI;
+        private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+
         public LogikaAPI(DataAPI dataAPI)
         {
             _dataAPI = dataAPI;
             punkty = new List<Ball>();
             random = new Random();
         }
-
-        /*public override void DodajKulki(int ballsNumber, int minX, int maxX, int minY, int maxY, int radius)
-        {
-            var randomGenerator = new Losowosc();
-            for (var i = 0; i < ballsNumber; i++)
-            {
-                var point = new Punkt(randomGenerator.GenerateDouble(minX, maxX), randomGenerator.GenerateDouble(minY, maxY), radius);
-                Punkty.Add(point);
-            }
-
-
-        }*/
 
         public override void StworzPilke()
         {
@@ -37,99 +27,73 @@ namespace Logika
             punkt.PositionChanged += CzyKolizja;
         }
 
-        private static readonly ReaderWriterLockSlim blokada = new ReaderWriterLockSlim();
         private bool CzyKolizjaMiedzyPilkami(Ball punkt1, Ball punkt2)
         {
             Vector2 pozycjaPunkt1 = punkt1.Position;
             Vector2 pozycjaPunkt2 = punkt2.Position;
-            int pozycja = (int)Math.Sqrt(Math.Pow((pozycjaPunkt1.X + punkt1.VectorX) - (pozycjaPunkt2.X + punkt2.VectorX), 2) + Math.Pow((pozycjaPunkt1.Y + punkt1.Y) - (pozycjaPunkt2.Y + punkt2.Y), 2));
-        
-            if(pozycja <= punkt1.Radius/2 + punkt2.Radius / 2)
+            int pozycja = (int)Math.Sqrt(Math.Pow((pozycjaPunkt1.X + punkt1.Velocity.X) - (pozycjaPunkt2.X + punkt2.Velocity.X), 2) + Math.Pow((pozycjaPunkt1.Y + punkt1.Velocity.Y) - (pozycjaPunkt2.Y + punkt2.Velocity.Y), 2));
+
+            if (pozycja <= punkt1.Radius / 2 + punkt2.Radius / 2)
             {
-                blokada.EnterWriteLock();
+                _semaphore.Wait();
                 try
                 {
-                    int x1 = punkt1.VectorX;
-                    int y1 = punkt1.VectorY;
-                    int x2 = punkt2.VectorX;
-                    int y2 = punkt2.VectorY;
+                    Vector2 v1 = punkt1.Velocity;
+                    Vector2 v2 = punkt2.Velocity;
 
-                    punkt1.VectorX = (x1 * (punkt1.Mass - punkt2.Mass) + 2 * punkt2.Mass * x2) / (punkt1.Mass + punkt2.Mass);
-                    punkt1.VectorY = (y1 * (punkt1.Mass - punkt2.Mass) + 2 * punkt2.Mass * y2) / (punkt1.Mass + punkt2.Mass);
-                    punkt2.VectorX = (x2 * (punkt2.Mass - punkt1.Mass) + 2 * punkt1.Mass * x1) / (punkt1.Mass + punkt2.Mass);
-                    punkt2.VectorY = (y2 * (punkt2.Mass - punkt1.Mass) + 2 * punkt1.Mass * y1) / (punkt1.Mass + punkt2.Mass);
+                    punkt1.Velocity = new Vector2(
+                        (v1.X * (punkt1.Mass - punkt2.Mass) + 2 * punkt2.Mass * v2.X) / (punkt1.Mass + punkt2.Mass),
+                        (v1.Y * (punkt1.Mass - punkt2.Mass) + 2 * punkt2.Mass * v2.Y) / (punkt1.Mass + punkt2.Mass));
+
+                    punkt2.Velocity = new Vector2(
+                        (v2.X * (punkt2.Mass - punkt1.Mass) + 2 * punkt1.Mass * v1.X) / (punkt1.Mass + punkt2.Mass),
+                        (v2.Y * (punkt2.Mass - punkt1.Mass) + 2 * punkt1.Mass * v1.Y) / (punkt1.Mass + punkt2.Mass));
                 }
                 finally
                 {
-                    blokada.ExitWriteLock();
+                    _semaphore.Release();
                 }
+
                 return false;
             }
             return true;
         }
-
-        /*public override void Poruszanie(int radius, int maxX, int maxY)
-        {
-            var randomGenerator = new Losowosc();
-            for (var i = 0; i < Punkty.Count; i++)
-            {
-                var xShift = randomGenerator.GenerateDouble(-1, 1);
-                var yShift = randomGenerator.GenerateDouble(-1, 1);
-                var x = Punkty[i].X + xShift;
-                var y = Punkty[i].Y + yShift;
-
-
-                if (x - radius < 0) x = radius;
-                if (x + radius > maxX) x = maxX - radius;
-                if (y - radius < 0) y = radius;
-                if (y + radius > maxY) y = maxY - radius;
-
-                Punkty[i].Move(x, y);
-            }
-        }*/
-
-        /*public override void Stop()
-        {
-            timer.Dispose();
-            Punkty.Clear();
-        }*/
 
         private void CzyKolizja(object sender, Zdarzenia e)
         {
             Ball punkt = (Ball)sender;
             if (punkt != null)
             {
-                blokada.EnterWriteLock();
+                _semaphore.Wait();
                 try
                 {
                     Vector2 position = punkt.Position;
                     if (position.X - punkt.Radius < 0)
                     {
-                        punkt.VectorX = Math.Abs(punkt.VectorX);
+                        punkt.Velocity = new Vector2(Math.Abs(punkt.Velocity.X), punkt.Velocity.Y);
                         position.X = punkt.Radius;
                     }
                     else if (position.X + punkt.Radius > _dataAPI.Granica.Szerokosc)
                     {
-                        punkt.VectorX = -Math.Abs(punkt.VectorX);
+                        punkt.Velocity = new Vector2(-Math.Abs(punkt.Velocity.X), punkt.Velocity.Y);
                         position.X = _dataAPI.Granica.Szerokosc - punkt.Radius;
                     }
 
                     if (position.Y - punkt.Radius < 0)
                     {
-                        punkt.VectorY = Math.Abs(punkt.VectorY);
+                        punkt.Velocity = new Vector2(punkt.Velocity.X, Math.Abs(punkt.Velocity.Y));
                         position.Y = punkt.Radius;
                     }
                     else if (position.Y + punkt.Radius > _dataAPI.Granica.Wysokosc)
                     {
-                        punkt.VectorY = -Math.Abs(punkt.VectorY);
+                        punkt.Velocity = new Vector2(punkt.Velocity.X, -Math.Abs(punkt.Velocity.Y));
                         position.Y = _dataAPI.Granica.Wysokosc - punkt.Radius;
                     }
                 }
                 finally
                 {
-                    blokada.ExitWriteLock();
+                    _semaphore.Release();
                 }
-
                 foreach (var punktt in punkty)
                 {
                     if (!punktt.Equals(punkt))
@@ -139,10 +103,5 @@ namespace Logika
                 }
             }
         }
-
-        /*public override void Start(int radius, int maxX, int maxY)
-        {
-            timer = new Timer((_) => Poruszanie(radius, maxX, maxY), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(16));
-        }*/
     }
 }

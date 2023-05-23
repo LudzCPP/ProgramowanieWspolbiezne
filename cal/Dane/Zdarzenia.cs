@@ -7,7 +7,7 @@ namespace Dane
 {
     public class Zdarzenia
     {
-        public Vector2 Position { get; set; }
+        public Vector2 Position { get; private set; }
 
         public Zdarzenia(Vector2 position)
         {

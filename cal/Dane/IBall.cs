@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Runtime.Intrinsics.X86;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Dane
@@ -13,75 +10,63 @@ namespace Dane
         public event PositionChangedEventHandler PositionChanged;
 
         private Vector2 _position;
-        private int _VectorX;
-        private int _VectorY;
+        private Vector2 _velocity;
         private int _radius;
         private int _mass;
+        private CancellationTokenSource _cts = new CancellationTokenSource();
 
-        public IBall(Vector2 position, int _VectorX, int _VectorY, int _radius, int _mass, Granica granica)
+        public IBall(Vector2 position, Vector2 velocity, int radius, int mass, Granica granica)
         {
-            this._position = position;
-            this._VectorX = VectorX;
-            this._VectorY = VectorY;
-            this._radius = _radius;
-            this._mass = _mass;
+            _position = position;
+            _velocity = velocity;
+            _radius = radius;
+            _mass = mass;
+            Granica = granica;
+            Task.Run(() => Move());
+        }
+
+        private TimeSpan ComputeDelay()
+        {
+            return TimeSpan.FromMilliseconds(2 * _velocity.Length());
         }
 
         public async Task Move()
         {
-            while (true)
+            while (!_cts.Token.IsCancellationRequested)
             {
-                int newX = (int)_position.X + _VectorX;
-                int newY = (int)_position.Y + _VectorY;
-                Vector2 newPosition = new Vector2(newX, newY);
-                setPosition(newPosition);
+                _position += _velocity;
 
-                double velocity = Math.Sqrt(_VectorX * _VectorX + _VectorY * _VectorY);
-                await Task.Delay(TimeSpan.FromMilliseconds(2 * velocity));
+                await Task.Delay(ComputeDelay(), _cts.Token);
+                PositionChanged?.Invoke(this, new Zdarzenia(_position));
             }
         }
 
         public override Vector2 Position
         {
-            get { return _position; }
+            get => _position;
         }
 
-        private void setPosition(Vector2 newPosition)
-        {
-            _position.X = newPosition.X;
-            _position.Y = newPosition.Y;
-            PositionChanged?.Invoke(this, new Zdarzenia(newPosition));
-        }
+        public override int X => (int)_position.X;
+        public override int Y => (int)_position.Y;
 
-        public override int X { get { return (int)_position.X; } }
-        public override int Y { get { return (int)_position.Y; } }
-        public override int VectorX
+        public override Vector2 Velocity
         {
-            get { return _VectorX; }
-            set { _VectorX = value; }
-        }
-
-        public override int VectorY
-        {
-            get { return _VectorY; }
-            set { _VectorY = value; }
+            get => _velocity;
+            set => _velocity = value;
         }
 
         public override int Radius
         {
-            get { return _radius; }
-            set { _radius = value; }
+            get => _radius;
+            set => _radius = value;
         }
 
-        public override int Diameter
-        {
-            get { return Radius * 2; }
-        }
+        public override int Diameter => _radius * 2;
 
         public override int Mass
         {
-            get { return _mass; }
-            set { _mass = value; }
+            get => _mass;
+            set => _mass = value;
         }
     }
 }

@@ -1,36 +1,45 @@
+using System.Numerics;
+using NUnit.Framework;
+using Dane;
 using Logika;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace LogicTest
+namespace Logika.Tests
 {
-    [TestClass]
-    public class BallTests
+    [TestFixture]
+    public class ILogikaAPIBaseTests
     {
-        Punkt ball = new Punkt(1.0, 2.0, 3.0);
+        private DataAPI _dataAPI;
 
-        [TestMethod]
-        public void ConstructorTest()
+        [SetUp]
+        public void SetUp()
         {
-            Assert.IsNotNull(ball);
+            _dataAPI = DataAPI.CreateAPI(300, 150);
         }
 
-        [TestMethod]
-        public void CreateBallTest()
+        [Test]
+        public void CreateApi_CreatesNewInstanceCorrectly()
         {
-            Assert.AreEqual(1.0, ball.X);
-            Assert.AreEqual(2.0, ball.Y);
-            Assert.AreEqual(3.0, ball.Radius);
+            // Act
+            ILogikaAPIBase logikaAPI = ILogikaAPIBase.CreateApi(_dataAPI);
+
+            // Assert
+            Assert.IsNotNull(logikaAPI);
+            Assert.IsEmpty(logikaAPI.punkty);
         }
 
-        [TestMethod]
-        public void SetBallRadiusTest()
+        [Test]
+        public void StworzPilke_AddsNewBallToCollection()
         {
-            ball.Radius = 5.0;
-            Assert.AreEqual(5.0, ball.Radius);
+            // Arrange
+            ILogikaAPIBase logikaAPI = ILogikaAPIBase.CreateApi(_dataAPI);
+
+            // Act
+            logikaAPI.StworzPilke();
+
+            // Assert
+            Assert.AreEqual(1, logikaAPI.punkty.Count);
         }
 
+        // Add more tests here to cover other scenarios and edge cases...
     }
 }

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ViewModel="clr-namespace:ViewModel;assembly=ViewModel"
         mc:Ignorable="d"
-        Title="Billard" Height="300" Width="350" ResizeMode="CanMinimize" Background="#0B132B">
+        Title="Billard" Height="600" Width="650" ResizeMode="CanMinimize" Background="#0B132B">
 
     <DockPanel>
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Margin="10">
